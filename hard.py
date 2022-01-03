@@ -150,27 +150,6 @@ def parse_rule(s):
         raise ValueError('Invalid course doobs')
     return res
 
-def parse_rule_expr_single(s):
-    s = preprocess(s)
-    curr = None
-    while True:
-        res = get_and(s)
-        if res:
-            s = res
-            (rhs, s) = parse_rule_expr(s)
-            curr = ('AND', curr, rhs)
-            continue
-        res = get_or(s)
-        if res:
-            s = res
-            (rhs, s) = parse_rule_expr(s)
-            curr = ('OR', curr, rhs)
-            continue
-        if curr != None:
-            return (curr, s)
-        res = parse_rule(s)
-        (curr, s) = res
-
 def parse_rule_expr(s):
     s = preprocess(s)
     curr = None
@@ -203,16 +182,6 @@ with open("./conditions.json") as f:
     CONDITIONS = json.load(f)
     f.close()
 
-"""
-Rule =
-    course: str
-    | empty: None
-    | uoc: ('UOC', amt, Rule)
-    | and: ('AND', Rule, Rule)
-    | or: ('OR', Rule, Rule)
-    | level: ('level', level, course)
-"""
-
 def num_satisfying(rule, courses_list, target_course):
     if rule is None:
         return len(courses_list)
@@ -227,7 +196,7 @@ def num_satisfying(rule, courses_list, target_course):
     if rule[0] == 'OR':
         return num_satisfying(rule[1], courses_list, target_course) \
                + num_satisfying(rule[2], courses_list, target_course)
-    print("Shouldn't reach here but ehh")
+    print("Shouldn't reach here but mypy doesnt like")
     return 0
 
 def unlocked(courses_list, target_course, expr):
@@ -245,12 +214,10 @@ def unlocked(courses_list, target_course, expr):
     if expr[0] == 'UOC':
         return num_satisfying(expr[2], courses_list, target_course) * 6 \
                >= expr[1]
-    print("Shouldn't reach here but ehh")
+    print("Shouldn't reach here but mypy doesnt like")
     return False
-
 
 
 def is_unlocked(courses_list, target_course):
     parsed = parse(CONDITIONS[target_course])
-    print(parsed)
     return unlocked(courses_list, target_course, parsed)
